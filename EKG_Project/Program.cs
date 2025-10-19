@@ -5,5 +5,7 @@ class Program
     static void Main(string[] args)
     {
         Console.WriteLine("Hello, World!");
+        Console.WriteLine("HEJ verden");
+        Console.WriteLine("HEJ verden2");
     }
 }
