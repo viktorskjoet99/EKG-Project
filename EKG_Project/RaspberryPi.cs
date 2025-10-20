@@ -1,6 +1,7 @@
 using System.Device.Gpio;
 using System.Device.Spi;
-using Iot.Device.Mcp3208;
+using Iot.Device.Mcp3xxx;
+using Iot.Device.Mcp3xxx.Mcp32080;
 
 namespace DefaultNamespace;
 
