@@ -5,11 +5,11 @@ using Iot.Device.Adc;
 
 namespace DefaultNamespace;
 
-public class RaspberryPi
+public class ECGSensor
 {
 	private readonly Mcp3208 _adc;
     
-	public RaspberryPi()
+	public ECGSensor()
 	{
 		SpiDevice device;
 		Mcp3208 adc = new Mcp3208(device);
