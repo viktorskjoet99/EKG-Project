@@ -8,7 +8,6 @@ public class ECGReadingProducer
     private readonly BlockingCollection<ECGSample> _dataqueue;
     private readonly ECGSensor _sensor;
     
-    
     private CancellationTokenSource _cts;
     private Thread _thread;
 
