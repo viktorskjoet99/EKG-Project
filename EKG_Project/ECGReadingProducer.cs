@@ -22,7 +22,7 @@ public class ECGReadingProducer
     public void Start()
     {
         if (_thread != null) return;
-        _thread = new Thread(() => Run())
+        _thread = new Thread(() => Run(_cts.Token))
         {
             IsBackground = true,
             Name = "ECGSensorProducer"
@@ -42,10 +42,21 @@ public class ECGReadingProducer
         _dataqueue.CompleteAdding();
     }
     
-    public static void Run()
+    public void Run(CancellationToken ct)
     {
-        var token = _cts.Token == CancellationToken.None;
+        while (!ct.IsCancellationRequested)
+        {
+            short v = _sensor.ReadRawSample();
+
+            var sample = new ECGSample()
+            {
+                Value = v,
+                TimeStamp = DateTime.UtcNow
+            };
+            _dataqueue.Add(sample);
+            
+            Thread.Sleep(1);
+        }
+        _dataqueue.CompleteAdding();
     }
-    
-   
 }
