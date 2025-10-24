@@ -13,7 +13,7 @@ public class StartStop
         _dataqueue = new BlockingCollection<ECGSample>(); // Måske der skal sættes en boundedCapacity
         
         var ecgSensor = new ECGSensor();
-        _producer = new ECGReadingProducer(ecgSensor, _dataqueue, 1000);
+        _producer = new ECGReadingProducer(ecgSensor, _dataqueue);
 
         _producer.Start();
         Console.WriteLine("System started");

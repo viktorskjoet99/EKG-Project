@@ -7,16 +7,15 @@ public class ECGReadingProducer
 {
     private readonly BlockingCollection<ECGSample> _dataqueue;
     private readonly ECGSensor _sensor;
-    private int _samplerateHz;
+    
     
     private CancellationTokenSource _cts;
     private Thread _thread;
 
-    public ECGReadingProducer(ECGSensor sensor, BlockingCollection<ECGSample> dataqueue, int samplerateHz = 1000)
+    public ECGReadingProducer(ECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
-        _samplerateHz = samplerateHz;
     }
     
     public void Start()
