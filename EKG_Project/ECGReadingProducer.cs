@@ -20,6 +20,9 @@ public class ECGReadingProducer
     public void Start()
     {
         if (_thread != null) return;
+        
+        _cts = new CancellationTokenSource();
+        
         _thread = new Thread(() => Run(_cts.Token))
         {
             IsBackground = true,
