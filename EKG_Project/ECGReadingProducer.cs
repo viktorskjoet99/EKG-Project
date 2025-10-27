@@ -6,12 +6,12 @@ namespace EKG_Project;
 public class ECGReadingProducer
 {
     private readonly BlockingCollection<ECGSample> _dataqueue;
-    private readonly ECGSensor _sensor;
+    private readonly IECGSensor _sensor;
     
     private CancellationTokenSource _cts;
     private Thread _thread;
 
-    public ECGReadingProducer(ECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
+    public ECGReadingProducer(IECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
