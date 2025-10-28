@@ -8,7 +8,7 @@ using Iot.Device.Adc;
 
 namespace DefaultNamespace;
 
-public class ECGSensor
+public class ECGSensor : IECGSensor
 {
 	private readonly Mcp3208 _adc;
 	private readonly SpiDevice _spi;

@@ -6,12 +6,12 @@ namespace EKG_Project;
 public class ECGReadingProducer
 {
     private readonly BlockingCollection<ECGSample> _dataqueue;
-    private readonly ECGSensor _sensor;
+    private readonly IECGSensor _sensor;
     
     private CancellationTokenSource _cts;
     private Thread _thread;
 
-    public ECGReadingProducer(ECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
+    public ECGReadingProducer(IECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
@@ -20,6 +20,9 @@ public class ECGReadingProducer
     public void Start()
     {
         if (_thread != null) return;
+        
+        _cts = new CancellationTokenSource();
+        
         _thread = new Thread(() => Run(_cts.Token))
         {
             IsBackground = true,
