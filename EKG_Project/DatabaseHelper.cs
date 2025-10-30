@@ -22,6 +22,7 @@ namespace EKG_Project
                     // Vi gemmer lige nu KUN Lead I
                     // Hvis hardwaregruppen senere kan levere Lead II og Lead III,
                     // kan tabellen udvides med ekstra kolonner (fx via ALTER TABLE eller ved at slette DB og genskabe).
+                    // Kig på time, som skal ændres til DateTime
 
                     string createECGTable = @"
                         CREATE TABLE IF NOT EXISTS ecg (
