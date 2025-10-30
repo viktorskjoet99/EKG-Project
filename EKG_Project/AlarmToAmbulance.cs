@@ -2,13 +2,8 @@ namespace DefaultNamespace;
 
 public class AlarmToAmbulance : IAlarm
 {
-    public void StartAlarm()
+    public void Update()
     {
         Console.WriteLine("HEART ATTACK, drive to this adresse: xxxxx");
-    }
-
-    public void StopAlarm()
-    {
-        Console.WriteLine("Alarm is off");
     }
 }

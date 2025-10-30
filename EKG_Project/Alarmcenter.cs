@@ -1,17 +1,24 @@
 namespace DefaultNamespace;
 
-public class Alarmcenter
+public class Alarmcenter : ISubject
 {
-    private IAlarm _alarm;
+    private List<IAlarm> _observers = new();
 
-    public Alarmcenter(IAlarm alarm)
+    public void Attach(IAlarm observer)
     {
-        _alarm = alarm;
+        _observers.Add(observer);
     }
 
-    public IAlarm Alarm
+    public void Detach(IAlarm observer)
     {
-        private get => _alarm; 
-        set => _alarm = value;
+        _observers.Remove(observer);
+    }
+
+    public void Notify()
+    {
+        foreach (var observer in _observers)
+        {
+            observer.Update();
+        }
     }
 }
