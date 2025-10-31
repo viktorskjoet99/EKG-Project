@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using EKG_Project;
 
-namespace DefaultNamespace;
+namespace EKG_Project;
 
 public class StartStop
 {

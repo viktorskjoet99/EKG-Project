@@ -7,7 +7,7 @@ class Program
 {
     static void Main(string[] args)
     {
-      
+      /*
         // 1) Fælles kø og processor
         var queue = new BlockingCollection<ECGSample>(boundedCapacity: 5000);
         var processor = new ECGProcessor();
@@ -41,6 +41,30 @@ class Program
 
         // 7) Udskriv endeligt snapshot
         processor.ProcessSamples();
-        Console.WriteLine("Test afsluttet ✔️");
+        Console.WriteLine("Test afsluttet ✔️"); */
+      
+      // 1️⃣ Opret subject (AlarmCenter)
+      var alarmCenter = new Alarmcenter();
+
+      // 2️⃣ Opret observers (de forskellige alarmer)
+      var alarmToPatient = new AlarmToPatient();
+      var alarmToRelative = new AlarmToRelative();
+      var alarmToAmbulance = new AlarmToAmbulance();
+
+      // 3️⃣ Tilmeld observers til subject
+      alarmCenter.Attach(alarmToPatient);
+      alarmCenter.Attach(alarmToRelative);
+      alarmCenter.Attach(alarmToAmbulance);
+
+      // 4️⃣ Udløs en hændelse
+      Console.WriteLine(">>> Simulerer hjertestop - Alarmcenter sender besked...");
+      alarmCenter.Notify();
+
+      // 5️⃣ Fjern én observer og test igen
+      alarmCenter.Detach(alarmToRelative);
+      Console.WriteLine("\n>>> Simulerer ny hændelse - pårørende fjernet...");
+      alarmCenter.Notify();
+
+      Console.WriteLine("\n>>> Test afsluttet ✅");
     }
 }

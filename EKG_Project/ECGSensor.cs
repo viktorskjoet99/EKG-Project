@@ -6,7 +6,7 @@ using EKG_Project;
 using Iot.Device.Adc;
 
 
-namespace DefaultNamespace;
+namespace EKG_Project;
 
 public class ECGSensor : IECGSensor
 {

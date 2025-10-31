@@ -1,4 +1,4 @@
-namespace DefaultNamespace;
+namespace EKG_Project;
 
 public class AlarmToAmbulance : IAlarm
 {
