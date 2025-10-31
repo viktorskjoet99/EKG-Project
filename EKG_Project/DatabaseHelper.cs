@@ -22,14 +22,16 @@ namespace EKG_Project
                     // Vi gemmer lige nu KUN Lead I
                     // Hvis hardwaregruppen senere kan levere Lead II og Lead III,
                     // kan tabellen udvides med ekstra kolonner (fx via ALTER TABLE eller ved at slette DB og genskabe).
-                    // Kig på time, som skal ændres til DateTime
+                    
 
                     string createECGTable = @"
                         CREATE TABLE IF NOT EXISTS ecg (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            time INTEGER NOT NULL,
-                            lead_I REAL NOT NULL
+                            DateTime INTEGER NOT NULL,
+                            lead_I INTEGER NOT NULL
                         );";
+
+                    //(ovenfor) bruger INTEGER istedet for REAL
 
                     using (var command = new SQLiteCommand(connection))
                     {
@@ -41,27 +43,27 @@ namespace EKG_Project
         }
 
         // Indsæt en måling (kun Lead I)
-        public static void InsertMeasurement(int time, double leadI)
+        public static void InsertMeasurement(int DateTime, int lead_I)
         {
             using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
                 string insertQuery = @"
-                    INSERT INTO ecg (time, lead_I)
-                    VALUES (@time, @leadI);";
+                    INSERT INTO ecg (DateTime, lead_I)
+                    VALUES (@DateTime, @lead_I);";
 
                 using (var command = new SQLiteCommand(insertQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@time", time);
-                    command.Parameters.AddWithValue("@leadI", leadI);
+                    command.Parameters.AddWithValue("@DateTime", DateTime);
+                    command.Parameters.AddWithValue("@lead_I", lead_I);
 
                     command.ExecuteNonQuery();
                 }
             }
         }
 
-        // Læs og print alle målinger (kun Lead I)
+        // Læs og print alle målinger (kun Lead_I)
         public static void PrintAllMeasurements()
         {
             using (var connection = new SQLiteConnection(connectionString))
@@ -76,7 +78,7 @@ namespace EKG_Project
                     while (reader.Read())
                     {
                         Console.WriteLine(
-                            $"ID: {reader["id"]}, Time: {reader["time"]}, Lead I: {reader["lead_I"]}");
+                            $"ID: {reader["id"]}, DateTime: {reader["DateTime"]}, Lead_I: {reader["lead_I"]}");
                     }
                 }
             }
