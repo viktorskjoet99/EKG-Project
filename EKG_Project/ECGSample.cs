@@ -7,6 +7,4 @@ public class ECGSample
     //public double Lead2 { get; set; }
     //public int lead3 { get; set; }
     public DateTime TimeStamp { get; set; }
-    
-    // Hvis vi skal lave test med FakeECGSensor, skal den bare ændres til "public int Value"
 }
