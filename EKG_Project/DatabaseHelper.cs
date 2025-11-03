@@ -6,16 +6,17 @@ namespace EKG_Project
 {
     public static class DatabaseHelper
     {
-        private static string connectionString = @"Data Source=..\..\Files\ECG_Database.db;Version=3;";
+        private static string FileName = @"..\..\..\Files\Database\ECG_Database.db";
+        private static string _connectionString = $"Data Source={FileName};Version=3;";
 
         public static void InitializeDataBase()
         {
-            if (!File.Exists(@"..\..\Files\ECG_Database.db"))
+            if (!File.Exists(FileName))
             {
                 // Opret databasefilen
-                SQLiteConnection.CreateFile(@"..\..\Files\ECG_Database.db");
+                SQLiteConnection.CreateFile(FileName);
 
-                using (var connection = new SQLiteConnection(connectionString))
+                using (var connection = new SQLiteConnection(_connectionString))
                 {
                     connection.Open();
 
@@ -24,18 +25,18 @@ namespace EKG_Project
                     // kan tabellen udvides med ekstra kolonner (fx via ALTER TABLE eller ved at slette DB og genskabe).
                     
 
-                    string createECGTable = @"
+                    string createEcgTable = @"
                         CREATE TABLE IF NOT EXISTS ecg (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            DateTime INTEGER NOT NULL,
-                            lead_I INTEGER NOT NULL
+                            dateTime INTEGER NOT NULL,
+                            leadI INTEGER NOT NULL
                         );";
 
-                    //(ovenfor) bruger INTEGER istedet for REAL
+                    //(ovenfor) bruger INTEGER istedet for REAL. Det er en hel værdi fra ADC'en mellem 0-4047.
 
                     using (var command = new SQLiteCommand(connection))
                     {
-                        command.CommandText = createECGTable;
+                        command.CommandText = createEcgTable;
                         command.ExecuteNonQuery();
                     }
                 }
@@ -43,30 +44,31 @@ namespace EKG_Project
         }
 
         // Indsæt en måling (kun Lead I)
-        public static void InsertMeasurement(int DateTime, int lead_I)
+        public static void InsertMeasurement(int dateTime, int leadI)
         {
-            using (var connection = new SQLiteConnection(connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
 
                 string insertQuery = @"
-                    INSERT INTO ecg (DateTime, lead_I)
-                    VALUES (@DateTime, @lead_I);";
+                    INSERT INTO ecg (dateTime, leadI)
+                    VALUES (@dateTime, @leadI);";
 
                 using (var command = new SQLiteCommand(insertQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@DateTime", DateTime);
-                    command.Parameters.AddWithValue("@lead_I", lead_I);
+                    command.Parameters.AddWithValue("@dateTime", dateTime);
+                    command.Parameters.AddWithValue("@leadI", leadI);
 
                     command.ExecuteNonQuery();
                 }
+                
             }
         }
 
         // Læs og print alle målinger (kun Lead_I)
         public static void PrintAllMeasurements()
         {
-            using (var connection = new SQLiteConnection(connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
 
@@ -78,7 +80,7 @@ namespace EKG_Project
                     while (reader.Read())
                     {
                         Console.WriteLine(
-                            $"ID: {reader["id"]}, DateTime: {reader["DateTime"]}, Lead_I: {reader["lead_I"]}");
+                            $"ID: {reader["id"]}, DateTime: {reader["dateTime"]}, Lead_I: {reader["leadI"]}");
                     }
                 }
             }
