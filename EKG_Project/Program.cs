@@ -72,7 +72,7 @@ class Program
       Console.WriteLine("\n>>> Test afsluttet ✅");
 
       */
-
+        /*
         // Sørg for at databasen findes
         DatabaseHelper.InitializeDataBase();
 
@@ -101,8 +101,28 @@ class Program
 
         Console.WriteLine("Simulering færdig. Her er alle målinger:");
         DatabaseHelper.PrintAllMeasurements();
-    
+        */
+        
+        var analyzer = new Analyzer();
+        var dataChunks = new DataChunks(analyzer);
 
+        Console.WriteLine("=== Start DataChunks test ===");
+
+        DateTime start = DateTime.UtcNow;
+
+        // Simuler 45 minutters målinger
+        for (int i = 0; i < 45; i++)
+        {
+            var sample = new ECGSample
+            {
+                Lead1 = i,
+                TimeStamp = start.AddMinutes(i)  // Én sample pr. minut
+            };
+
+            dataChunks.AddChunk(sample);
+        }
+
+        Console.WriteLine("=== Test afsluttet ===");
 
 }
 }
