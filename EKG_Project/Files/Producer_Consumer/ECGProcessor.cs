@@ -31,7 +31,7 @@ public class ECGProcessor
 
         foreach (var sample in snapshot)
         {
-            Console.WriteLine($"Value: {sample.Value}, TimeStamp: {sample.TimeStamp}");
+            Console.WriteLine($"Value: {sample.Lead1}, TimeStamp: {sample.TimeStamp}");
         }
     }
 }

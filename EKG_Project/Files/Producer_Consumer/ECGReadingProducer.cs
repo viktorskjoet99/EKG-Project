@@ -51,12 +51,12 @@ public class ECGReadingProducer
 
             var sample = new ECGSample()
             {
-                Value = v,
+                Lead1 = v,
                 TimeStamp = DateTime.UtcNow
             };
             _dataqueue.Add(sample);
             
-            Thread.Sleep(1);
+            Thread.Sleep(1000);
         }
         _dataqueue.CompleteAdding();
     }

@@ -23,7 +23,7 @@ public class ECGDataqueue
             var sample = _sensor.ReadRawSample();
             _processor.AddSample(new ECGSample
             {
-                Value = sample,
+                Lead1 = sample,
                 TimeStamp = DateTime.UtcNow,
             });
             Thread.Sleep(1);
