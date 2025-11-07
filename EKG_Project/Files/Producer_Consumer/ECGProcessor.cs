@@ -4,6 +4,12 @@ public class ECGProcessor
 {
     private readonly object _lock = new object();
     private readonly List<ECGSample> _samples = new();
+    private readonly DataChunks _dataChunks;
+
+    public ECGProcessor(DataChunks dataChunks)
+    {
+        _dataChunks = dataChunks;
+    }
 
     public int Count()
     {
@@ -19,6 +25,8 @@ public class ECGProcessor
         {
             _samples.Add(sample);
         }
+        
+        _dataChunks.AddChunk(sample);
     }
 
     public void ProcessSamples()
