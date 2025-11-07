@@ -77,6 +77,6 @@ class Program
         Console.WriteLine("\nMålinger gemt i databasen\n");
         DatabaseHelper.PrintAllMeasurements();
 
-        Console.WriteLine("\nTest afsluttet ");
+        Console.WriteLine("\nTest afsluttet");
 }
 }
