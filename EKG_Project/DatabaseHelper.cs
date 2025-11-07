@@ -6,7 +6,13 @@ namespace EKG_Project
 {
     public static class DatabaseHelper
     {
-        private static string FileName = @"..\..\..\Files\Database\ECG_Database.db";
+        // Den her skal køres i Visual Studios
+        //private static string FileName = @"..\..\..\Files\Database\ECG_Database.db";
+        // Den her skal køres i Rider 
+        private static readonly string FileName = Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "Files", "Database", "ECG_Database.db"
+        );
         private static string _connectionString = $"Data Source={FileName};Version=3;";
 
         public static void InitializeDataBase()
