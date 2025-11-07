@@ -47,7 +47,7 @@ public class DataChunks
         // Og analyser dataen som før
         _analyzer.Analyze(finishedChunk);
 
-        Console.WriteLine($"🩺 {finishedChunk.Count} målinger gemt i databasen.");
+        Console.WriteLine($" {finishedChunk.Count} målinger gemt i databasen.");
     }
     
 }
