@@ -47,7 +47,7 @@ public class ECGReadingProducer
     {
         while (!ct.IsCancellationRequested)
         {
-            short v = _sensor.ReadRawSample();
+            int v = _sensor.ReadRawSample();
 
             var sample = new ECGSample()
             {
