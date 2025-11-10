@@ -24,14 +24,14 @@ public class ECGSensor : IECGSensor
 		_adc = new Mcp3208(spi);
 	}
 
-	public short ReadRawSample()
+	public int ReadRawSample()
 	{
 		Span<byte> buffer = stackalloc byte[3] {0x06, 0x00, 0x00};
 		Span<byte> buffer2 = stackalloc byte[3];
 		_spi.TransferFullDuplex(buffer, buffer2);
 		
 		int value = ((buffer2[1] & 0x0F) << 8 | buffer2[2]);
-		return (short)(value - 2048);
+		return value - 2048;
 	}
 	
 	
