@@ -12,9 +12,15 @@ class Program
 
         // 1) Sørg for at databasen findes
         DatabaseHelper.InitializeDataBase();
+        
+        // Instans af alarm
+        var alarmcenter = new Alarmcenter();
+        alarmcenter.Attach(new AlarmToPatient());
+        alarmcenter.Attach(new AlarmToRelative());
+        alarmcenter.Attach(new AlarmToAmbulance());
 
         // 2) Opret de nødvendige objekter
-        var analyzer   = new Analyzer();            // analyserer hver chunk
+        var analyzer   = new Analyzer(alarmcenter);            // analyserer hver chunk
         var dataChunks = new DataChunks(analyzer);  // samler + gemmer data (via din finalize)
         var queue      = new BlockingCollection<ECGSample>(boundedCapacity: 10000);
 
