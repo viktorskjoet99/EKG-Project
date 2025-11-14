@@ -10,7 +10,7 @@ class Program
     {
         Console.WriteLine("=== Starter EKG system end-to-end test ===");
 
-        // 1) Sørg for at databasen findes
+        // Sørg for at databasen findes
         DatabaseHelper.InitializeDataBase();
         
         // Instans af alarm
@@ -19,7 +19,7 @@ class Program
         alarmcenter.Attach(new AlarmToRelative());
         alarmcenter.Attach(new AlarmToAmbulance());
 
-        // 2) Opret de nødvendige objekter
+        // Opret de nødvendige objekter
         var analyzer   = new Analyzer(alarmcenter);            // analyserer hver chunk
         var dataChunks = new DataChunks(analyzer);  // samler + gemmer data (via din finalize)
         var queue      = new BlockingCollection<ECGSample>(boundedCapacity: 10000);
@@ -31,7 +31,7 @@ class Program
         // Processor (viser at vi også kan samle i RAM til evt. visning)
         var processor = new ECGProcessor(dataChunks);
 
-        // 3) Start producer og consumer i separate tråde
+        // Start producer og consumer i separate tråde
         // Producer kører sin egen tråd via Start()/Stop()
         producer.Start();
 
@@ -63,7 +63,7 @@ class Program
         };
         consumerThread.Start();
 
-        // 4) Kør systemet i X sekunder (justér frit)
+        // Kør systemet i X sekunder (justér frit)
         const int seconds = 30;
         for (int i = 0; i < seconds; i++)
         {
@@ -71,15 +71,12 @@ class Program
             Console.WriteLine($"[{DateTime.Now:T}] Systemet kører... sek: {i + 1}");
         }
 
-        // 5) Stop tråde pænt
+        // Stop tråde pænt
         producer.Stop();          // beder producer om at stoppe
         queue.CompleteAdding();   // signalér at der ikke kommer flere samples
         consumerThread.Join();    // vent på consumer
 
-        // (Valgfrit) Processér snapshot fra RAM-processoren (printer til konsol)
-        processor.ProcessSamples();
-
-        // 6) Udskriv det fra databasen som bekræftelse
+        // Udskriv det fra databasen som bekræftelse
         Console.WriteLine("\nMålinger gemt i databasen\n");
         DatabaseHelper.PrintAllMeasurements();
 
