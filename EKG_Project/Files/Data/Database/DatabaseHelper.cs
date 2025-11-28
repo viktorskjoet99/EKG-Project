@@ -11,7 +11,7 @@ namespace EKG_Project
         // Den her skal køres i Rider 
         private static readonly string FileName = Path.Combine(
             AppContext.BaseDirectory,
-            "..", "..", "..", "Files", "Database", "ECG_Database.db"
+            "..", "..", "..", "Files", "Data", "Database", "ECG_Database.db"
         );
         private static string _connectionString = $"Data Source={FileName};Version=3;";
 
