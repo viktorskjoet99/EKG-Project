@@ -7,6 +7,7 @@ public class Analyzer
     private readonly int _sampleRate = 1000;  // Hz
     private readonly int _stDelayMS = 100;  // ms
     
+    private STStatus _lastStatus = STStatus.Normal;
     private readonly Alarmcenter _alarmCenter;
 
     public Analyzer(Alarmcenter alarmCenter)
@@ -59,11 +60,12 @@ public class Analyzer
         Console.WriteLine($"[Analyzer] Baseline={baseline:F3}, ST={avgST:F3}, Delta={delta:F3}");
         Console.WriteLine($"[Analyzer] Resultat: {result}");
         
-        if (result == STStatus.Elevation)
+        if (result != STStatus.Normal && _lastStatus == STStatus.Normal)
+        {
+            Console.WriteLine("[Analyzer] Alarm udløst!");
             _alarmCenter.Notify();
-
-        if (result == STStatus.Depression)
-            _alarmCenter.Notify();
+        }
+        _lastStatus = result;
     }
 
     private List<int> DetectRPeaks(List<double> values, double threshold)
@@ -73,7 +75,7 @@ public class Analyzer
 
         for (int i = 1; i < values.Count - 1; i++)
         {
-            if (values[i] > threshold && values[i] > values[i - 1] && values[i] < values[i + 1])
+            if (values[i] > threshold && values[i] > values[i - 1] && values[i] > values[i + 1])
             {
                 if (rPeaks.Count == 0 || (i - rPeaks.Last()) > minDistance)
                     rPeaks.Add(i);
