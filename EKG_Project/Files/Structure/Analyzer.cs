@@ -5,7 +5,7 @@ public class Analyzer
 
     private readonly double _stThreshold = 0.1; // mV
     private readonly int _sampleRate = 1000;  // Hz
-    private readonly int _stDelayMS = 100;  // ms
+    private readonly int _stDelayMS = 70;  // ms
     
     private STStatus _lastStatus = STStatus.Normal;
     private readonly Alarmcenter _alarmCenter;
@@ -22,7 +22,7 @@ public class Analyzer
         
         var values = samples.Select(s => (double)s.Lead1).ToList();
 
-        var rPeaks = DetectRPeaks(values, threshold: 0.7);
+        var rPeaks = DetectRPeaks(values, threshold: 0.5);
 
         if (rPeaks.Count == 0)
         {
