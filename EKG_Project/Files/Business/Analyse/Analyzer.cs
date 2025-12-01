@@ -14,12 +14,14 @@ public class Analyzer
     {
         _alarmCenter = alarmCenter;
     }
-    
-    public void Analyze(List<ECGSample> samples)
+
+    public List<STEvent> Analyze(List<ECGSample> samples)
     {
+        var events = new List<STEvent>();
+
         Console.WriteLine($"[Analyzer] Fik nyt chunk med {samples.Count} samples.");
         Console.WriteLine($"Første sample: {samples[0].TimeStamp}, Sidste sample: {samples[^1].TimeStamp}");
-        
+
         var values = samples.Select(s => (double)s.Lead1).ToList();
 
         var rPeaks = DetectRPeaks(values, threshold: 0.5);
@@ -27,45 +29,51 @@ public class Analyzer
         if (rPeaks.Count == 0)
         {
             Console.WriteLine("Ingen R-takke fundet");
-            return;
+            return events;
         }
 
         double baseline = EstimateBaseline(values);
-        
-        List<double> stValues = new List<double>();
+
         foreach (int rIndex in rPeaks)
         {
             int stIndex = rIndex + (int)(_stDelayMS * _sampleRate / 1000);
-            if (stIndex < values.Count) stValues.Add(values[stIndex]);
+
+            if (stIndex >= values.Count)
+                continue;
+
+            double stValue = values[stIndex];
+            double delta = stValue - baseline;
+
+            if (delta > _stThreshold)
+            {
+                events.Add(new STEvent
+                {
+                    TimeStamp = samples[stIndex].TimeStamp,
+                    Index = stIndex,
+                    Status = STStatus.Elevation
+                });
+            }
+            else if (delta < -_stThreshold)
+            {
+                events.Add(new STEvent
+                {
+                    TimeStamp = samples[stIndex].TimeStamp,
+                    Index = stIndex,
+                    Status = STStatus.Depression
+                });
+            }
         }
 
-        if (stValues.Count == 0)
-        {
-            Console.WriteLine("Ingen R-takke fundet");
-            return;
-        }
-        
-        double avgST = stValues.Average();
-        double delta = avgST - baseline;
-
-        STStatus result;
-        
-        if (delta > _stThreshold)
-            result = STStatus.Elevation;
-        else if (delta < -_stThreshold)
-            result = STStatus.Depression;
-        else
-            result = STStatus.Normal;
-        
-        Console.WriteLine($"[Analyzer] Baseline={baseline:F3}, ST={avgST:F3}, Delta={delta:F3}");
-        Console.WriteLine($"[Analyzer] Resultat: {result}");
-        
-        if (result != STStatus.Normal && _lastStatus == STStatus.Normal)
+        // Samlet resultat for chunken (til alarm)
+        if (events.Count > 0 && _lastStatus == STStatus.Normal)
         {
             Console.WriteLine("[Analyzer] Alarm udløst!");
             _alarmCenter.Notify();
         }
-        _lastStatus = result;
+
+        _lastStatus = events.Count > 0 ? events.First().Status : STStatus.Normal;
+
+        return events;
     }
 
     private List<int> DetectRPeaks(List<double> values, double threshold)
