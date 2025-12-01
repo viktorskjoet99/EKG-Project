@@ -21,10 +21,8 @@ public class Analyzer
 
         // Slettes, når analyzer klassen virker 
         Console.WriteLine($"[Analyzer] Received new chunk with {samples.Count} samples.");
-        Console.WriteLine($"First sample: {samples[0].TimeStamp}, Last sample: {samples[^1].TimeStamp}");
 
         var values = samples.Select(s => (double)s.Lead1).ToList();
-
         var rPeaks = DetectRPeaks(values, threshold: 0.5);
 
         if (rPeaks.Count == 0)
