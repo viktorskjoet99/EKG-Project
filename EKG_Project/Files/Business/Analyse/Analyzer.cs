@@ -19,8 +19,8 @@ public class Analyzer
     {
         var events = new List<STEvent>();
 
-        Console.WriteLine($"[Analyzer] Fik nyt chunk med {samples.Count} samples.");
-        Console.WriteLine($"Første sample: {samples[0].TimeStamp}, Sidste sample: {samples[^1].TimeStamp}");
+        Console.WriteLine($"[Analyzer] Received new chunk with {samples.Count} samples.");
+        Console.WriteLine($"First sample: {samples[0].TimeStamp}, Last sample: {samples[^1].TimeStamp}");
 
         var values = samples.Select(s => (double)s.Lead1).ToList();
 
@@ -28,7 +28,7 @@ public class Analyzer
 
         if (rPeaks.Count == 0)
         {
-            Console.WriteLine("Ingen R-takke fundet");
+            Console.WriteLine("No R-takke detected");
             return events;
         }
 
@@ -67,7 +67,7 @@ public class Analyzer
         // Samlet resultat for chunken (til alarm)
         if (events.Count > 0 && _lastStatus == STStatus.Normal)
         {
-            Console.WriteLine("[Analyzer] Alarm udløst!");
+            Console.WriteLine("[Analyzer] Alarm triggered");
             _alarmCenter.Notify();
         }
 
