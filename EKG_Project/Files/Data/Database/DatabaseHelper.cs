@@ -50,7 +50,7 @@ namespace EKG_Project
         }
 
         // Indsæt en måling (kun Lead I)
-        public static void InsertMeasurement(int dateTime, int leadI)
+        public static void InsertMeasurement(int dateTime, double leadI)
         {
             using (var connection = new SQLiteConnection(_connectionString))
             {
