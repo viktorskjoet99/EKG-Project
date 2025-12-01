@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using EKG_Project;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace EKG_Project;
 
@@ -8,6 +9,8 @@ class Program
 {
     static void Main(string[] args)
     {
+       
+        /*
         Console.WriteLine("=== Starter EKG system end-to-end test ===");
 
         // Sørg for at databasen findes
@@ -81,5 +84,47 @@ class Program
         DatabaseHelper.PrintAllMeasurements();
 
         Console.WriteLine("\nTest afsluttet");
+        */
+        
+        var alarmcenter = new Alarmcenter();
+        var analyzer = new Analyzer(alarmcenter);
+
+        var samples = LoadCsv("/Users/viktorskjot/Desktop/Physionet filer/ST/I03_12lead.csv");
+        var events = analyzer.Analyze(samples);
+
+        foreach (var ev in events)
+        {
+            Console.WriteLine($"{ev.Status} at {ev.TimeStamp:HH:mm:ss.fff}, index {ev.Index}");
+        }
+
+        Console.WriteLine("CSV test complete.");
 }
+    
+    public static List<ECGSample> LoadCsv(string path)
+    {
+        var samples = new List<ECGSample>();
+
+        var lines = File.ReadAllLines(path);
+
+        // Skip header
+        for (int i = 1; i < lines.Length; i++)
+        {
+            var parts = lines[i].Split(',');
+
+            // CSV columns:
+            // 0 = time_s
+            // 1 = I (Lead 1)
+        
+            double timeSeconds = double.Parse(parts[0], CultureInfo.InvariantCulture);
+            double lead1Value  = double.Parse(parts[1], CultureInfo.InvariantCulture);
+
+            samples.Add(new ECGSample
+            {
+                TimeStamp = DateTime.Now.AddSeconds(timeSeconds),
+                Lead1 = (int)lead1Value  // Convert double → int because your ECGSample uses int
+            });
+        }
+
+        return samples;
+    }
 }
