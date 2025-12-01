@@ -23,7 +23,9 @@ public class Analyzer
         Console.WriteLine($"[Analyzer] Received new chunk with {samples.Count} samples.");
 
         var values = samples.Select(s => (double)s.Lead1).ToList();
+        Console.WriteLine($"Signal min: {values.Min()}, max: {values.Max()}");
         var rPeaks = DetectRPeaks(values, threshold: 0.5);
+        Console.WriteLine($"Found {rPeaks.Count} R-peaks.");
 
         if (rPeaks.Count == 0)
         {
@@ -72,9 +74,56 @@ public class Analyzer
 
         _lastStatus = events.Count > 0 ? events.First().Status : STStatus.Normal;
 
+        var stEpisodes = GroupByContinuousST(samples, baseline);
+
+        foreach (var ep in stEpisodes)
+        {
+            Console.WriteLine($"ST Episode start={ep.StartTime}, end={ep.EndTime}, duration={ep.Duration} sec");
+        }
+        
         return events;
     }
 
+    private List<STEpisodes> GroupByContinuousST(List<ECGSample> samples, double baseline)
+    {
+        var episodes = new List<STEpisodes>();
+        bool inEpisode = false;
+        DateTime start = DateTime.MinValue;
+        DateTime end = DateTime.MinValue;
+
+        foreach (var s in samples)
+        {
+            double delta = s.Lead1 - baseline;
+
+            if (delta > _stThreshold) // Elevation detekteret
+            {
+                if (!inEpisode)
+                {
+                    inEpisode = true;
+                    start = s.TimeStamp;
+                }
+                end = s.TimeStamp;
+            }
+            else
+            {
+                // Hvis vi forlader en episode
+                if (inEpisode)
+                {
+                    if ((end - start).TotalSeconds >= 10) // min varighed
+                        episodes.Add(new STEpisodes(start, end));
+
+                    inEpisode = false;
+                }
+            }
+        }
+
+        // Sidste episode hvis aktiv
+        if (inEpisode)
+            episodes.Add(new STEpisodes(start, end));
+
+        return episodes;
+    }
+    
     private List<int> DetectRPeaks(List<double> values, double threshold)
     {
         List<int> rPeaks = new List<int>();
@@ -82,12 +131,23 @@ public class Analyzer
 
         for (int i = 1; i < values.Count - 1; i++)
         {
-            if (values[i] > threshold && values[i] > values[i - 1] && values[i] > values[i + 1])
+            bool positivePeak =
+                values[i] > threshold &&
+                values[i] > values[i - 1] &&
+                values[i] > values[i + 1];
+
+            bool negativePeak =
+                -values[i] > threshold &&     
+                values[i] < values[i - 1] &&
+                values[i] < values[i + 1];
+
+            if (positivePeak || negativePeak)
             {
                 if (rPeaks.Count == 0 || (i - rPeaks.Last()) > minDistance)
                     rPeaks.Add(i);
             }
         }
+
         return rPeaks;
     }
 
