@@ -19,6 +19,7 @@ public class Analyzer
     {
         var events = new List<STEvent>();
 
+        // Slettes, når analyzer klassen virker 
         Console.WriteLine($"[Analyzer] Received new chunk with {samples.Count} samples.");
         Console.WriteLine($"First sample: {samples[0].TimeStamp}, Last sample: {samples[^1].TimeStamp}");
 
