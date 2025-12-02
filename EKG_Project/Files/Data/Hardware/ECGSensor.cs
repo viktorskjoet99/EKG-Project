@@ -24,7 +24,7 @@ public class ECGSensor : IECGSensor
 		_adc = new Mcp3208(spi);
 	}
 
-	public int ReadRawSample()
+	public double ReadRawSample()
 	{
 		int value = _adc.Read(0);
 		return value - 2048;
