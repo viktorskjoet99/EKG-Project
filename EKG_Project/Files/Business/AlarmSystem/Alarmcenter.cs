@@ -14,11 +14,11 @@ public class Alarmcenter : ISubject
         _observers.Remove(observer);
     }
 
-    public void Notify()
+    public void Notify(STStatus status)
     {
         foreach (var observer in _observers)
         {
-            observer.Update();
+            observer.Update(status);
         }
     }
 }

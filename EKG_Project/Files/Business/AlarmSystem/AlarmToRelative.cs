@@ -1,9 +1,10 @@
 namespace EKG_Project;
 
-public class AlarmToRelative : IAlarm
+public class AlarmToEmergencyContact : IAlarm
 {
-    public void Update()
+    public void Update(STStatus status)
     {
-        Console.WriteLine("Call the hospital on xxxxxxxx");
+        if (status == STStatus.Elevation)
+            Console.WriteLine("[EMERGENCY CONTACT] Critical heart event - Hospital has been notified");
     }
 }
