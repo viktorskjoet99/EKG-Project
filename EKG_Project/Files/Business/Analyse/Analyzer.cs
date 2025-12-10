@@ -2,11 +2,9 @@ namespace EKG_Project;
 
 public class Analyzer
 {
+    private readonly int _sampleRate = 500; // Hz
+    private readonly int _stDelayMS = 70; // ms
 
-    private readonly double _stThreshold = 0.1; // mV
-    private readonly int _sampleRate = 1000;  // Hz
-    private readonly int _stDelayMS = 70;  // ms
-    
     private STStatus _lastStatus = STStatus.Normal;
     private readonly Alarmcenter _alarmCenter;
 
@@ -19,23 +17,30 @@ public class Analyzer
     {
         var events = new List<STEvent>();
 
-        // Slettes, når analyzer klassen virker 
-        Console.WriteLine($"[Analyzer] Received new chunk with {samples.Count} samples.");
+        Console.WriteLine("Running Analyzer");
 
-        var values = samples.Select(s => (double)s.Lead1).ToList();
-        Console.WriteLine($"Signal min: {values.Min()}, max: {values.Max()}");
-        var rPeaks = DetectRPeaks(values, threshold: 0.5);
+        // 1) Udtræk rå værdier
+        var values = samples.Select(s => s.Lead1).ToList();
+
+        // 2) Estimer baseline
+        double baseline = EstimateBaseline(values);
+
+        // 3) Center signal omkring baseline
+        var centered = values.Select(v => v - baseline).ToList();
+        
+        // 4) Find R-peaks
+        var rPeaks = DetectRPeaks(centered);
         Console.WriteLine($"Found {rPeaks.Count} R-peaks.");
 
         if (rPeaks.Count == 0)
-        {
-            Console.WriteLine("No R-takke detected");
             return events;
-        }
+        
+        // 5) Dynamisk ST-threshold baseret på centered signal amplitude
+        double peakToPeak = centered.Max() - centered.Min();
+        double dynamicST = peakToPeak * 0.02;  // 2% af signal amplitude
 
-        double baseline = EstimateBaseline(values);
-
-        foreach (int rIndex in rPeaks)
+        // 6) ST-analyse (sker stadig på det originale signal)
+        foreach (var rIndex in rPeaks)
         {
             int stIndex = rIndex + (int)(_stDelayMS * _sampleRate / 1000);
 
@@ -45,112 +50,82 @@ public class Analyzer
             double stValue = values[stIndex];
             double delta = stValue - baseline;
 
-            if (delta > _stThreshold)
+            if (delta > dynamicST)
             {
                 events.Add(new STEvent
                 {
-                    TimeStamp = samples[stIndex].TimeStamp,
                     Index = stIndex,
+                    TimeStamp = samples[stIndex].TimeStamp,
                     Status = STStatus.Elevation
                 });
             }
-            else if (delta < -_stThreshold)
+            else if (delta < -dynamicST)
             {
                 events.Add(new STEvent
                 {
-                    TimeStamp = samples[stIndex].TimeStamp,
                     Index = stIndex,
+                    TimeStamp = samples[stIndex].TimeStamp,
                     Status = STStatus.Depression
                 });
             }
         }
 
-        // Samlet resultat for chunken (til alarm)
-        if (events.Count > 0 && _lastStatus == STStatus.Normal)
+        if (events.Any())
         {
-            Console.WriteLine("[Analyzer] Alarm triggered");
-            _alarmCenter.Notify();
+            int elevations = events.Count(e => e.Status == STStatus.Elevation);
+            int depressions = events.Count(e => e.Status == STStatus.Depression);
+
+            if (elevations > 0 && _lastStatus != STStatus.Elevation) 
+            {
+                Console.WriteLine($"ST ELEVATION detected: {elevations} events");
+                _alarmCenter.Notify(STStatus.Elevation);
+                _lastStatus = STStatus.Elevation;
+            }
+            else if (depressions > 0 && _lastStatus != STStatus.Depression) 
+            {
+                Console.WriteLine($"ST DEPRESSION detected: {depressions} events");
+                _alarmCenter.Notify(STStatus.Depression);
+                _lastStatus = STStatus.Depression;
+            }
         }
-
-        _lastStatus = events.Count > 0 ? events.First().Status : STStatus.Normal;
-
-        var stEpisodes = GroupByContinuousST(samples, baseline);
-
-        foreach (var ep in stEpisodes)
+        else if (_lastStatus != STStatus.Normal)
         {
-            Console.WriteLine($"ST Episode start={ep.StartTime}, end={ep.EndTime}, duration={ep.Duration} sec");
+            Console.WriteLine($"ST normalized");
+            _lastStatus = STStatus.Normal;
         }
         
         return events;
     }
 
-    private List<STEpisodes> GroupByContinuousST(List<ECGSample> samples, double baseline)
+    private List<int> DetectRPeaks(List<double> values)
     {
-        var episodes = new List<STEpisodes>();
-        bool inEpisode = false;
-        DateTime start = DateTime.MinValue;
-        DateTime end = DateTime.MinValue;
+        var rPeaks = new List<int>();
+        int minDistance = (int)(_sampleRate * 0.40); 
 
-        foreach (var s in samples)
-        {
-            double delta = s.Lead1 - baseline;
-
-            if (delta > _stThreshold) // Elevation detekteret
-            {
-                if (!inEpisode)
-                {
-                    inEpisode = true;
-                    start = s.TimeStamp;
-                }
-                end = s.TimeStamp;
-            }
-            else
-            {
-                // Hvis vi forlader en episode
-                if (inEpisode)
-                {
-                    if ((end - start).TotalSeconds >= 10) // min varighed
-                        episodes.Add(new STEpisodes(start, end));
-
-                    inEpisode = false;
-                }
-            }
-        }
-
-        // Sidste episode hvis aktiv
-        if (inEpisode)
-            episodes.Add(new STEpisodes(start, end));
-
-        return episodes;
-    }
-    
-    private List<int> DetectRPeaks(List<double> values, double threshold)
-    {
-        List<int> rPeaks = new List<int>();
-        int minDistance = (int)(_sampleRate * 0.25);
+        // Dynamisk threshold: 65-70% af max positive værdi
+        var positiveValues = values.Where(v => v > 0).ToList();
+        double maxPositive = positiveValues.Any() ? positiveValues.Max() : values.Max();
+        double dynThreshold = maxPositive * 0.70;  // 70% af højeste peak
 
         for (int i = 1; i < values.Count - 1; i++)
         {
-            bool positivePeak =
-                values[i] > threshold &&
-                values[i] > values[i - 1] &&
-                values[i] > values[i + 1];
+            double v = values[i];
 
-            bool negativePeak =
-                -values[i] > threshold &&     
-                values[i] < values[i - 1] &&
-                values[i] < values[i + 1];
+            bool isPeak =
+                v > dynThreshold &&
+                v > values[i - 1] &&
+                v > values[i + 1];
 
-            if (positivePeak || negativePeak)
+            if (isPeak)
             {
                 if (rPeaks.Count == 0 || (i - rPeaks.Last()) > minDistance)
                     rPeaks.Add(i);
             }
         }
-
+        Console.WriteLine($"Found {rPeaks.Count} R-peaks in {values.Count} samples");
         return rPeaks;
     }
-
+    
     private double EstimateBaseline(List<double> values)
     {
         var sorted = values.OrderBy(x => x).ToList();
@@ -159,4 +134,5 @@ public class Analyzer
         int end = (int)(n * 0.8);
         return sorted.Skip(start).Take(end - start).Average();
     }
+    
 }
