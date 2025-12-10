@@ -35,7 +35,7 @@ public class DataChunks
             Console.WriteLine($"Skipping incomplete chunk ({_chunks.Count} samples)");
             return;
         }
-        
+    
         var finishedChunk = new List<ECGSample>(_chunks);
         _chunks.Clear();
 
@@ -45,9 +45,7 @@ public class DataChunks
             int timestamp = (int)new DateTimeOffset(sample.TimeStamp).ToUnixTimeSeconds();
             DatabaseHelper.InsertMeasurement(timestamp, sample.Lead1);
         }
-
-        // Og analyser dataen som før
-        _analyzer.Analyze(finishedChunk);
+    
         Console.WriteLine($" {finishedChunk.Count} measurements saved to the database");
     }
     
@@ -56,10 +54,20 @@ public class DataChunks
         return new List<ECGSample>(_allSamples);
     }
     
-    //Denne klasse er tilføjet til test 
     public void FinalizeRemaining()
     {
-        FinalizeChunk();
+        if (_chunks.Count == 0) return;
+    
+        Console.WriteLine($"Finalizing remaining {_chunks.Count} samples");
+    
+        // Gem til database
+        foreach (var sample in _chunks)
+        {
+            int timestamp = (int)new DateTimeOffset(sample.TimeStamp).ToUnixTimeSeconds();
+            DatabaseHelper.InsertMeasurement(timestamp, sample.Lead1);
+        }
+    
+        _chunks.Clear();
     }
     
 }

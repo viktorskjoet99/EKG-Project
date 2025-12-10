@@ -1,37 +1,31 @@
-
+using System.Collections.Concurrent;
 
 namespace EKG_Project;
 
 public class ECGDataqueue
 {
-    private readonly ECGSensor _sensor;
-    private DataChunks _dataChunks;
+    private readonly BlockingCollection<ECGSample> _queue;
     
-    public bool Running { get; private set; }
-
-    public ECGDataqueue(ECGSensor sensor, DataChunks dataChunks)
+    public ECGDataqueue(int boundedCapacity = 10000)
     {
-        _sensor = sensor;
-        _dataChunks = dataChunks;
+        _queue = new BlockingCollection<ECGSample>(boundedCapacity);
     }
-
-    public void Run()
+    
+    // Producer kalder denne
+    public void Add(ECGSample sample)
     {
-        Running = true;
-        while (Running)
-        {
-            var sample = _sensor.ReadRawSample();
-            _dataChunks.AddChunk(new ECGSample
-            {
-                Lead1 = sample,
-                TimeStamp = DateTime.UtcNow,
-            });
-            Thread.Sleep(1);
-        }
+        _queue.Add(sample);
     }
-
-    public void Stop()
+    
+    // Producer kalder denne når færdig
+    public void CompleteAdding()
     {
-        Running = false;
+        _queue.CompleteAdding();
+    }
+    
+    // Consumer kalder denne
+    public IEnumerable<ECGSample> GetConsumingEnumerable()
+    {
+        return _queue.GetConsumingEnumerable();
     }
 }

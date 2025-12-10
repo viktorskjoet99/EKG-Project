@@ -24,7 +24,7 @@ class Program
         var dataChunks = new DataChunks(analyzer);
 
         // 5) QUEUE
-        var queue = new BlockingCollection<ECGSample>(boundedCapacity: 10000);
+        var queue = new ECGDataqueue(10000);
 
         // 6) SENSOR (hardware)
         var sensor = new ECGSensor();
@@ -38,7 +38,7 @@ class Program
         consumer.Start();
 
         // 9) Vent til producer stopper
-        Thread.Sleep(13000);   // mål i 10 sekunder = 5000 samples = 1 chunks
+        Thread.Sleep(13000);   // mål i 12,59 sekunder = 6297 samples = 1 chunks
         producer.Stop();
 
         // 10) Stop queue
@@ -50,8 +50,9 @@ class Program
 
         // 12) Analyser HELE datasættet
         var allSamples = dataChunks.GetAllSamples();
+        Console.WriteLine($"\n=== FINAL ANALYSIS: Analyzing {allSamples.Count} total samples ===");
         var allEvents = analyzer.Analyze(allSamples);
-
+        
         Console.WriteLine("\nST Summary:");
         Console.WriteLine($"Elevations:   {allEvents.Count(e => e.Status == STStatus.Elevation)}");
         Console.WriteLine($"Depressions:  {allEvents.Count(e => e.Status == STStatus.Depression)}");
@@ -61,7 +62,6 @@ class Program
 
         if (allEvents.Any())
         {
-            Console.WriteLine("No ST events detected.");
             foreach (var ev in allEvents)
                 Console.WriteLine($"{ev.Status} at {ev.TimeStamp:HH:mm:ss.fff}, id: {ev.Index}");
         }

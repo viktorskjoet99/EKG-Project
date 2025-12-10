@@ -6,7 +6,7 @@ namespace EKG_Project;
 public class ECGReadingProducer
 {
     private readonly IECGSensor _sensor;
-    private readonly BlockingCollection<ECGSample> _dataqueue;
+    private readonly ECGDataqueue _dataqueue;
     private readonly int _sampleRate = 500;
     private readonly DateTime _startTime = DateTime.UtcNow;
     private const int MaxSamples = 6297;  
@@ -15,7 +15,7 @@ public class ECGReadingProducer
 
     public bool IsFinished => _sensor.IsFinished;
 
-    public ECGReadingProducer(IECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
+    public ECGReadingProducer(IECGSensor sensor, ECGDataqueue dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
@@ -43,7 +43,6 @@ public class ECGReadingProducer
 
             _dataqueue.Add(sample);
             index++;
-            // Lige nu bruger vi bare simuleret data. Den her er til realtid ved rigtige målinger
             Thread.Sleep(1000 / _sampleRate); 
         }
 
