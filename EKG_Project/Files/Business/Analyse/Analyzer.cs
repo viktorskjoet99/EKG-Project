@@ -3,7 +3,7 @@ namespace EKG_Project;
 public class Analyzer
 {
     private readonly int _sampleRate = 500; // Hz
-    private readonly int _stDelayMS = 70; // ms
+    private readonly int _stDelayMS = 150; // ms
 
     private STStatus _lastStatus = STStatus.Normal;
     private readonly Alarmcenter _alarmCenter;
@@ -24,7 +24,6 @@ public class Analyzer
 
         // 2) Estimer baseline
         double baseline = EstimateBaseline(values);
-        Console.WriteLine($"Baseline: {baseline:F3}");
         // 🔍 Debugging: Print signalets nøgleparametre
         Console.WriteLine($"Min: {values.Min():F3}, Max: {values.Max():F3}, Mean: {values.Average():F3}, Baseline: {baseline:F3}");
 
@@ -38,11 +37,8 @@ public class Analyzer
         if (rPeaks.Count == 0)
             return events;
         
-        // Den her skal slettes, når vi er færdige med at debugge
         double peakToPeak = centered.Max() - centered.Min();
-        double relativeST = peakToPeak * 0.03;  
-        double absoluteST = 0.1;  
-        double dynamicST = Math.Max(relativeST, absoluteST);
+        double dynamicST = peakToPeak * 0.08; 
 
         // 6) ST-analyse (sker stadig på det originale signal)
         foreach (var rIndex in rPeaks)
@@ -105,7 +101,7 @@ public class Analyzer
     private List<int> DetectRPeaks(List<double> values)
     {
         var rPeaks = new List<int>();
-        int minDistance = (int)(_sampleRate * 0.40); 
+        int minDistance = (int)(_sampleRate * 0.25); 
 
         // Dynamisk threshold: 65-70% af max positive værdi
         var positiveValues = values.Where(v => v > 0).ToList();
@@ -137,7 +133,7 @@ public class Analyzer
         int n = sorted.Count;
         int start = (int)(n * 0.2);
         int end = (int)(n * 0.8);
-        return sorted.Skip(start).Take(end - start).Average();
+        return sorted[values.Count / 2];
     }
     
 }
