@@ -5,59 +5,54 @@ namespace EKG_Project;
 
 public class ECGReadingProducer
 {
-    private readonly BlockingCollection<ECGSample> _dataqueue;
     private readonly IECGSensor _sensor;
-    
-    private CancellationTokenSource _cts;
-    private Thread _thread;
+    private readonly BlockingCollection<ECGSample> _dataqueue;
+    private readonly int _sampleRate = 500;
+    private readonly DateTime _startTime = DateTime.UtcNow;
+    private const int MaxSamples = 6297;  
+
+    private Thread? _thread;
+
+    public bool IsFinished => _sensor.IsFinished;
 
     public ECGReadingProducer(IECGSensor sensor, BlockingCollection<ECGSample> dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
     }
-    
+
     public void Start()
     {
-        if (_thread != null) return;
-        
-        _cts = new CancellationTokenSource();
-        
-        _thread = new Thread(() => Run(_cts.Token))
-        {
-            IsBackground = true,
-            Name = "ECGSensorProducer"
-        };
+        _thread = new Thread(Run);
         _thread.Start();
+    }
+
+    private void Run()
+    {
+        int index = 0;
+
+        while (!_sensor.IsFinished && index < MaxSamples)
+        {
+            double v = _sensor.ReadRawSample();
+
+            var sample = new ECGSample
+            {
+                Lead1 = v,
+                TimeStamp = _startTime.AddSeconds(index / (double)_sampleRate)
+            };
+
+            _dataqueue.Add(sample);
+            index++;
+            // Lige nu bruger vi bare simuleret data. Den her er til realtid ved rigtige målinger
+            Thread.Sleep(1000 / _sampleRate); 
+        }
+
+        _dataqueue.CompleteAdding();
     }
 
     public void Stop()
     {
-        if (_thread == null){ return;}
-        _cts.Cancel();
-        _thread.Join();
-        _thread = null;
-        _cts.Dispose();
-        _cts = null;
-        
-        _dataqueue.CompleteAdding();
-    }
-    
-    public void Run(CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested)
-        {
-            double v = _sensor.ReadRawSample();
-
-            var sample = new ECGSample()
-            {
-                Lead1 = v,
-                TimeStamp = DateTime.UtcNow
-            };
-            _dataqueue.Add(sample);
-            
-            Thread.Sleep(1000);
-        }
-        _dataqueue.CompleteAdding();
+        // __cts.Cancel();
+        _thread?.Join();
     }
 }

@@ -5,20 +5,33 @@ namespace EKG_Project;
 public class ECGReadingConsumer
 {
     private readonly BlockingCollection<ECGSample> _dataqueue;
-    private readonly ECGProcessor _processor;
+    private readonly DataChunks _dataChunks;
+    private Thread _thread;
 
-    public ECGReadingConsumer(BlockingCollection<ECGSample> dataqueue, ECGProcessor processor)
+    public ECGReadingConsumer(BlockingCollection<ECGSample> dataqueue, DataChunks dataChunks)
     {
         _dataqueue = dataqueue;
-        _processor = processor;
+        _dataChunks = dataChunks;
     }
 
+    public void Start()
+    {
+        _thread = new Thread(Run);
+        _thread.Start();
+    }
+
+    
     public void Run()
     {
         foreach (var sample in _dataqueue.GetConsumingEnumerable())
         {
-            _processor.AddSample(sample);
+            _dataChunks.AddChunk(sample);
         }
+    }
+
+    public void Stop()
+    {
+        _thread.Join();
     }
     
 }

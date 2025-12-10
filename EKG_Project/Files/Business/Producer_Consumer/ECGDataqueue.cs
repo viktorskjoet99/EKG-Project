@@ -5,14 +5,14 @@ namespace EKG_Project;
 public class ECGDataqueue
 {
     private readonly ECGSensor _sensor;
-    private ECGProcessor _processor;
+    private DataChunks _dataChunks;
     
     public bool Running { get; private set; }
 
-    public ECGDataqueue(ECGSensor sensor, ECGProcessor processor)
+    public ECGDataqueue(ECGSensor sensor, DataChunks dataChunks)
     {
         _sensor = sensor;
-        _processor = processor;
+        _dataChunks = dataChunks;
     }
 
     public void Run()
@@ -21,7 +21,7 @@ public class ECGDataqueue
         while (Running)
         {
             var sample = _sensor.ReadRawSample();
-            _processor.AddSample(new ECGSample
+            _dataChunks.AddChunk(new ECGSample
             {
                 Lead1 = sample,
                 TimeStamp = DateTime.UtcNow,
