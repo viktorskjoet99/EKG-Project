@@ -35,12 +35,4 @@ public class ECGSensor : IECGSensor
 		return voltage;
 	}
 	
-	
-
-	
-	
-	
-	
-	
-
 }
