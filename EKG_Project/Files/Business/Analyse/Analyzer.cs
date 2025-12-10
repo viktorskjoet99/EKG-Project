@@ -17,20 +17,14 @@ public class Analyzer
     {
         var events = new List<STEvent>();
 
-        Console.WriteLine("Running Analyzer");
-
-        // 1) Udtræk rå værdier
+        Console.WriteLine("Running Analyzer: ");
+        
         var values = samples.Select(s => s.Lead1).ToList();
-
-        // 2) Estimer baseline
+        
         double baseline = EstimateBaseline(values);
-        // 🔍 Debugging: Print signalets nøgleparametre
-        Console.WriteLine($"Min: {values.Min():F3}, Max: {values.Max():F3}, Mean: {values.Average():F3}, Baseline: {baseline:F3}");
-
-        // 3) Center signal omkring baseline
+        
         var centered = values.Select(v => v - baseline).ToList();
         
-        // 4) Find R-peaks
         var rPeaks = DetectRPeaks(centered);
         Console.WriteLine($"Found {rPeaks.Count} R-peaks.");
 
@@ -39,8 +33,7 @@ public class Analyzer
         
         double peakToPeak = centered.Max() - centered.Min();
         double dynamicST = peakToPeak * 0.08; 
-
-        // 6) ST-analyse (sker stadig på det originale signal)
+        
         foreach (var rIndex in rPeaks)
         {
             int stIndex = rIndex + (int)(_stDelayMS * _sampleRate / 1000);
@@ -102,8 +95,7 @@ public class Analyzer
     {
         var rPeaks = new List<int>();
         int minDistance = (int)(_sampleRate * 0.25); 
-
-        // Dynamisk threshold: 65-70% af max positive værdi
+        
         var positiveValues = values.Where(v => v > 0).ToList();
         double maxPositive = positiveValues.Any() ? positiveValues.Max() : values.Max();
         double dynThreshold = maxPositive * 0.70;  // 70% af højeste peak
@@ -130,9 +122,6 @@ public class Analyzer
     private double EstimateBaseline(List<double> values)
     {
         var sorted = values.OrderBy(x => x).ToList();
-        int n = sorted.Count;
-        int start = (int)(n * 0.2);
-        int end = (int)(n * 0.8);
         return sorted[values.Count / 2];
     }
     
