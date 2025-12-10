@@ -8,51 +8,51 @@ class Program
     {
         Console.WriteLine("Starter EKG system end-to-end test");
 
-        // 1) DATABASE
+        // Initialiserer DATABASE
         DatabaseHelper.InitializeDataBase();
 
-        // 2) ALARM
+        // Initialiserer ALARM
         var alarmcenter = new Alarmcenter();
         alarmcenter.Attach(new AlarmToDoctor());
         alarmcenter.Attach(new AlarmToEmergencyContact());
         alarmcenter.Attach(new EmergencyCallCenter());
 
-        // 3) ANALYZER
+        // Initialiserer ANALYZER
         var analyzer = new Analyzer(alarmcenter);
 
-        // 4) DATACHUNKS
+        // Initialiserer DATACHUNKS
         var dataChunks = new DataChunks(analyzer);
 
-        // 5) QUEUE
+        // Initialiserer køen
         var queue = new ECGDataqueue(10000);
 
-        // 6) SENSOR (hardware)
+        // Initialiserer SENSOR 
         var sensor = new ECGSensor();
 
-        // 7) PRODUCER
+        // Initialiserer PRODUCER og starter den
         var producer = new ECGReadingProducer(sensor, queue);
         producer.Start();
 
-        // 8) CONSUMER THREAD
+        // Initialiserer CONSUMER THREAD og starter den
         var consumer = new ECGReadingConsumer(queue, dataChunks);
         consumer.Start();
-
-        // 9) Vent til producer stopper
+        
         Thread.Sleep(13000);   // mål i 12,59 sekunder = 6297 samples = 1 chunks
         producer.Stop();
-
-        // 10) Stop queue
+        
+        // Stopper dataflow: producer stoppes, kø lukkes og consumer afslutter
         queue.CompleteAdding();
         consumer.Stop();
 
-        // 11) Færdiggør det sidste chunk
+        // Færdiggør det sidste chunk
         dataChunks.FinalizeRemaining();
 
-        // 12) Analyser HELE datasættet
+        // Analyser HELE datasættet // Skal slettes
         var allSamples = dataChunks.GetAllSamples();
         Console.WriteLine($"\n=== FINAL ANALYSIS: Analyzing {allSamples.Count} total samples ===");
         var allEvents = analyzer.Analyze(allSamples);
         
+        // Udskriver vores ST events for, hvad der har været
         Console.WriteLine("\nST Summary:");
         Console.WriteLine($"Elevations:   {allEvents.Count(e => e.Status == STStatus.Elevation)}");
         Console.WriteLine($"Depressions:  {allEvents.Count(e => e.Status == STStatus.Depression)}");
@@ -60,6 +60,7 @@ class Program
 
         Console.WriteLine("\nST Events (detailed):");
 
+        // Udskriver hvis der er tilfælde af ST-afvigelser, så hvordan det skete 
         if (allEvents.Any())
         {
             foreach (var ev in allEvents)
