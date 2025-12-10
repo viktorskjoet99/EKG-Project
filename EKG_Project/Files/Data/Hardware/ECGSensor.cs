@@ -30,7 +30,6 @@ public class ECGSensor : IECGSensor
 	{
 		int raw = _adc.Read(channel: 0); 
 		
-		// Konverter til volt
 		double voltage = (raw / 4095.0) * 5.0;
 		return voltage;
 	}

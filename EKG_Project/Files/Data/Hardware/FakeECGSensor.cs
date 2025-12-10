@@ -17,8 +17,7 @@ public class FakeECGSensor : IECGSensor
 
             var parts = line.Split(',');
             if (parts.Length < 12) continue;
-
-            // Brug LEAD 1 (index 1)
+            
             if (double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
             {
                 _samples.Add(value);
