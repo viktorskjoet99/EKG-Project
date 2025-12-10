@@ -38,8 +38,7 @@ public class DataChunks
     
         var finishedChunk = new List<ECGSample>(_chunks);
         _chunks.Clear();
-
-        // Gem i databasen
+        
         foreach (var sample in finishedChunk)
         {
             int timestamp = (int)new DateTimeOffset(sample.TimeStamp).ToUnixTimeSeconds();
@@ -59,8 +58,7 @@ public class DataChunks
         if (_chunks.Count == 0) return;
     
         Console.WriteLine($"Finalizing remaining {_chunks.Count} samples");
-    
-        // Gem til database
+        
         foreach (var sample in _chunks)
         {
             int timestamp = (int)new DateTimeOffset(sample.TimeStamp).ToUnixTimeSeconds();
