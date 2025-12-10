@@ -5,8 +5,8 @@ namespace EKG_Project;
 public class DataChunks
 {
     private readonly List<ECGSample> _chunks = new();
-    private readonly TimeSpan _interval = TimeSpan.FromSeconds(10); // Skal ændres til 15 min, når vi får ECG måler 
-    private DateTime _lastUpdate = DateTime.MinValue;
+    private readonly int _chunkSize = 6297;
+    private readonly List<ECGSample> _allSamples = new();
     
     private Analyzer _analyzer;
 
@@ -17,16 +17,12 @@ public class DataChunks
 
     public void AddChunk(ECGSample chunk)
     {
-        if (_lastUpdate == DateTime.MinValue)
-        {
-            _lastUpdate = chunk.TimeStamp;
-        }
         _chunks.Add(chunk);
+        _allSamples.Add(chunk);           
 
-        if (chunk.TimeStamp - _lastUpdate >= _interval)
+        if (_chunks.Count >= _chunkSize)
         {
             FinalizeChunk();
-            _lastUpdate = chunk.TimeStamp;
         }
     }
     
@@ -34,10 +30,16 @@ public class DataChunks
     {
         if (_chunks.Count == 0) return;
 
+        if (_chunks.Count < _chunkSize)
+        {
+            Console.WriteLine($"Skipping incomplete chunk ({_chunks.Count} samples)");
+            return;
+        }
+        
         var finishedChunk = new List<ECGSample>(_chunks);
         _chunks.Clear();
 
-        // Gem hver måling i databasen
+        // Gem i databasen
         foreach (var sample in finishedChunk)
         {
             int timestamp = (int)new DateTimeOffset(sample.TimeStamp).ToUnixTimeSeconds();
@@ -46,8 +48,18 @@ public class DataChunks
 
         // Og analyser dataen som før
         _analyzer.Analyze(finishedChunk);
-
         Console.WriteLine($" {finishedChunk.Count} measurements saved to the database");
+    }
+    
+    public List<ECGSample> GetAllSamples()
+    {
+        return new List<ECGSample>(_allSamples);
+    }
+    
+    //Denne klasse er tilføjet til test 
+    public void FinalizeRemaining()
+    {
+        FinalizeChunk();
     }
     
 }
