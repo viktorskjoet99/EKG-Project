@@ -9,10 +9,9 @@ namespace EKG_Project
         // Den her skal køres i Visual Studios
         //private static string FileName = @"..\..\..\Files\Database\ECG_Database.db";
         // Den her skal køres i Rider 
-        private static readonly string FileName = Path.Combine(
-            AppContext.BaseDirectory,
-            "..", "..", "..", "Files", "Data", "Database", "ECG_Database.db"
-        );
+        private static readonly string FileName =
+            "/home/madsa/EKG_Project/Files/Data/Database/ECG_Database.db";
+        
         private static string _connectionString = $"Data Source={FileName};Version=3;";
 
         public static void InitializeDataBase()
