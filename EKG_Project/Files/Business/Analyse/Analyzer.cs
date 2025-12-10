@@ -24,6 +24,9 @@ public class Analyzer
 
         // 2) Estimer baseline
         double baseline = EstimateBaseline(values);
+        Console.WriteLine($"Baseline: {baseline:F3}");
+        // 🔍 Debugging: Print signalets nøgleparametre
+        Console.WriteLine($"Min: {values.Min():F3}, Max: {values.Max():F3}, Mean: {values.Average():F3}, Baseline: {baseline:F3}");
 
         // 3) Center signal omkring baseline
         var centered = values.Select(v => v - baseline).ToList();
@@ -35,9 +38,11 @@ public class Analyzer
         if (rPeaks.Count == 0)
             return events;
         
-        // 5) Dynamisk ST-threshold baseret på centered signal amplitude
+        // Den her skal slettes, når vi er færdige med at debugge
         double peakToPeak = centered.Max() - centered.Min();
-        double dynamicST = peakToPeak * 0.02;  // 2% af signal amplitude
+        double relativeST = peakToPeak * 0.03;  
+        double absoluteST = 0.1;  
+        double dynamicST = Math.Max(relativeST, absoluteST);
 
         // 6) ST-analyse (sker stadig på det originale signal)
         foreach (var rIndex in rPeaks)
