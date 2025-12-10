@@ -98,7 +98,7 @@ public class Analyzer
         
         var positiveValues = values.Where(v => v > 0).ToList();
         double maxPositive = positiveValues.Any() ? positiveValues.Max() : values.Max();
-        double dynThreshold = maxPositive * 0.70;  // 70% af højeste peak
+        double dynThreshold = maxPositive * 0.70;  
 
         for (int i = 1; i < values.Count - 1; i++)
         {
