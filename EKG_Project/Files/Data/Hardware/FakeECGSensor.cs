@@ -1,15 +1,38 @@
+using System.Globalization;
+
 namespace EKG_Project;
 
 public class FakeECGSensor : IECGSensor
 {
-    private int _i = 0;
-    private readonly Random _rand = new Random();
+    private readonly List<double> _samples = new();
+    private int _index = 0;
 
-    public int ReadRawSample()
+    public bool IsFinished => _index >= _samples.Count;
+
+    public FakeECGSensor(string filePath)
     {
-        // Simulerer EKG-lignende bølgeform + tilfældig støj
-        double v = 1000 * Math.Sin(_i * 0.02) + _rand.NextDouble() * 50 - 25;
-        _i++;
-        return (short)Math.Clamp(v, short.MinValue, short.MaxValue);
+        foreach (var line in File.ReadLines(filePath))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var parts = line.Split(',');
+            if (parts.Length < 12) continue;
+
+            // Brug LEAD 1 (index 1)
+            if (double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
+            {
+                _samples.Add(value);
+            }
+        }
+
+        Console.WriteLine($"[FakeECGSensor] Loaded {_samples.Count} samples from file.");
+    }
+
+    public double ReadRawSample()
+    {
+        if (IsFinished)
+            return 0;
+
+        return _samples[_index++];
     }
 }

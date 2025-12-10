@@ -12,6 +12,8 @@ public class ECGSensor : IECGSensor
 {
 	private readonly Mcp3208 _adc;
 	private readonly SpiDevice _spi;
+
+	public bool IsFinished => false;
 	
 	public ECGSensor()
 	{
@@ -26,8 +28,11 @@ public class ECGSensor : IECGSensor
 
 	public double ReadRawSample()
 	{
-		int value = _adc.Read(0);
-		return value - 2048;
+		int raw = _adc.Read(channel: 0); 
+		
+		// Konverter til volt
+		double voltage = (raw / 4095.0) * 5.0;
+		return voltage;
 	}
 	
 	
