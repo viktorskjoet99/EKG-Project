@@ -50,7 +50,6 @@ public class ECGReadingProducer
 
     public void Stop()
     {
-        // __cts.Cancel();
         _thread?.Join();
     }
 }
