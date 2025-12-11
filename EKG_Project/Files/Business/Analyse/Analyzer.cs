@@ -3,7 +3,7 @@ namespace EKG_Project;
 public class Analyzer
 {
     private readonly int _sampleRate = 500; // Hz
-    private readonly int _stDelayMS = 150; // ms
+    private readonly int _stDelayMS = 80; // ms
 
     private STStatus _lastStatus = STStatus.Normal;
     private readonly Alarmcenter _alarmCenter;
@@ -32,7 +32,7 @@ public class Analyzer
             return events;
         
         double peakToPeak = centered.Max() - centered.Min();
-        double dynamicST = peakToPeak * 0.08; 
+        double dynamicST = peakToPeak * 0.065; 
         
         foreach (var rIndex in rPeaks)
         {
