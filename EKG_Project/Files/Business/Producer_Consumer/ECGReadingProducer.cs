@@ -9,8 +9,7 @@ public class ECGReadingProducer
     private readonly ECGDataqueue _dataqueue;
     private readonly int _sampleRate = 500;
     private readonly DateTime _startTime = DateTime.UtcNow;
-    private const int MaxSamples = 6297;  
-
+    private const int MaxSamples = 6297;
     private Thread? _thread;
 
     public bool IsFinished => _sensor.IsFinished;
