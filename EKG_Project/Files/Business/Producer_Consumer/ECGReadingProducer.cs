@@ -5,7 +5,7 @@ namespace EKG_Project;
 
 public class ECGReadingProducer
 {
-    private readonly IECGSensor _sensor;
+    private readonly ECGSensor _sensor;
     private readonly ECGDataqueue _dataqueue;
     private readonly int _sampleRate = 500;
     private readonly DateTime _startTime = DateTime.UtcNow;
@@ -14,7 +14,7 @@ public class ECGReadingProducer
 
     public bool IsFinished => _sensor.IsFinished;
 
-    public ECGReadingProducer(IECGSensor sensor, ECGDataqueue dataqueue)
+    public ECGReadingProducer(ECGSensor sensor, ECGDataqueue dataqueue)
     {
         _sensor = sensor;
         _dataqueue = dataqueue;
